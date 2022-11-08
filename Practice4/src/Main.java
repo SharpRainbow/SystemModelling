@@ -92,17 +92,6 @@ public class Main {
         return out;
     }
 
-    /*public static double[] getBufTime(double[] input, double[] startTime){
-        double[] out = new double[input.length];
-        double inputTime = 0;
-        for (int i = 0; i < out.length; i++){
-            inputTime += input[i];
-            double dif = startTime[i] - inputTime;
-            out[i] = dif <= 0 ? 0 : dif;
-        }
-        return out;
-    }*/
-
     public static double[][] getBufTime(double[] input, double[] proc, double[] startProc){
         //1 - время с начала работы системы;2 - количество программ в буфере;3 - время нахождения в буфере
         double[][] out = new double[input.length][3];
@@ -122,22 +111,6 @@ public class Main {
             out[i][1] = m;
         }
         return out;
-    }
-
-    public static HashMap<Integer, ArrayList<Double>> getCountBuf(double[] buffer) {
-        HashMap<Integer, ArrayList<Double>> count = new HashMap<>();
-        int cnt = 0;
-        for (double d : buffer) {
-            if (d != 0) {
-                cnt++;
-                if (!(count.containsKey(cnt)))
-                    count.put(cnt, new ArrayList<>());
-                count.get(cnt).add(d);
-            }
-            else
-                cnt = 0;
-        }
-        return count;
     }
 
     public static double getCountBuf(double[][] input, int size){
