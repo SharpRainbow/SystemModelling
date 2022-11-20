@@ -4,17 +4,27 @@ public class Main {
     public static void main(String[] args) {
         double[] input = getSequence(100, 4, 12);
         double[] processing = getSequence(100, 2, 8);
-        double[] startProc = getTime(input, processing);
-        double[][] bufTime = getBufTime(input, processing, startProc);
-        System.out.println("Время прихода заявок: " + Arrays.toString(input));
-        System.out.println("Время обработки заявок: " + Arrays.toString(processing));
-        System.out.println("Время начала обработки заявки: " + Arrays.toString(startProc));
+        double[][] bufTime = getBufTime(input, processing, 5);
+        //System.out.println("Время прихода заявок: " + Arrays.toString(input));
+        //System.out.println("Время обработки заявок: " + Arrays.toString(processing));
+        System.out.println("\n" + "-".repeat(58) + "Результаты" + "-".repeat(57));
+        String format = "|%1$-14s|%2$-16s|%3$-14s|%4$-17s|%5$-17s|%6$-21s|%7$-18s|\n";
+        System.out.println("| Номер заявки | Время с начала |" +
+                        " Время начала | Время обработки | Время окончания |" +
+                " Количество программ | Время нахождения |");
+        System.out.format(format, "", " работы системы", " обработки", "", " обработки", " в буфере", " в буфере");
+        System.out.println("-".repeat(125));
         for (double[] doubles : bufTime) {
-            for (double aDouble : doubles) {
-                System.out.format("%.3f ", aDouble);
+            String[] row = new String[doubles.length];
+            for (int i = 0; i < 7; i++) {
+                if (i == 0 || i ==5 || doubles[i] == 0)
+                    row[i] = String.format("%.0f", doubles[i]);
+                else
+                    row[i] = String.format("%.3f", doubles[i]);
             }
-            System.out.println();
+            System.out.format(format, row);
         }
+        System.out.println("-".repeat(125));
         double taskTime;
         int counter = 1;
         do {
@@ -26,17 +36,26 @@ public class Main {
         System.out.println("------------------------------------------------");
         double[] input1 = getExpSeq(100, 1.0/3);
         double[] processing1 = getExpSeq(100, 1.0/4);
-        double[] startProc1 = getTime(input1, processing1);
-        double[][] bufTime1 = getBufTime(input1, processing1, startProc1);
-        System.out.println("Время прихода заявок: " + Arrays.toString(input1));
-        System.out.println("Время обработки заявок: " + Arrays.toString(processing1));
-        System.out.println("Время начала обработки заявки: " + Arrays.toString(startProc1));
+        double[][] bufTime1 = getBufTime(input1, processing1, 5);
+        //System.out.println("Время прихода заявок: " + Arrays.toString(input1));
+        //System.out.println("Время обработки заявок: " + Arrays.toString(processing1));
+        System.out.println("\n" + "-".repeat(58) + "Результаты" + "-".repeat(57));
+        System.out.println("| Номер заявки | Время с начала |" +
+                " Время начала | Время обработки | Время окончания |" +
+                " Количество программ | Время нахождения |");
+        System.out.format(format, "", " работы системы", " обработки", "", " обработки", " в буфере", " в буфере");
+        System.out.println("-".repeat(125));
         for (double[] doubles : bufTime1) {
-            for (double aDouble : doubles) {
-                System.out.format("%.3f ", aDouble);
+            String[] row = new String[doubles.length];
+            for (int i = 0; i < 7; i++) {
+                if (i == 0 || i ==5 || doubles[i] == 0)
+                    row[i] = String.format("%.0f", doubles[i]);
+                else
+                    row[i] = String.format("%.3f", doubles[i]);
             }
-            System.out.println();
+            System.out.format(format, row);
         }
+        System.out.println("-".repeat(125));
         counter = 1;
         do {
             taskTime = getCountBuf(bufTime1, counter);
@@ -92,23 +111,35 @@ public class Main {
         return out;
     }
 
-    public static double[][] getBufTime(double[] input, double[] proc, double[] startProc){
-        //1 - время с начала работы системы;2 - количество программ в буфере;3 - время нахождения в буфере
-        double[][] out = new double[input.length][3];
-        double[] endProc = new double[input.length];//Время окончания обработки заявки
-        out[0][0] = input[0];
-        endProc[0] = input[0] + proc[0];
+    public static double[][] getBufTime(double[] input, double[] proc, int n){
+        //1 - номер заявки; 2 - время с начала работы системы; 3 - время начала обработки заявки; 4 - время обработки заявки;
+        //5 - время окончания обработки; 6 - количество программ в буфере;7 - время нахождения в буфере
+        double[][] out = new double[input.length][7];
+        out[0][0] = 1;
+        out[0][1] = out[0][2] = input[0];
+        out[0][3] = proc[0];
+        out[0][4] = input[0] + proc[0];
         double inputTime = input[0];
         for (int i = 1; i < input.length; i++){
-            out[i][0] = (inputTime += input[i]);
-            endProc[i] = startProc[i] + proc[i];
-            out[i][2] = startProc[i] - inputTime;
+            inputTime += input[i];
+            double startProc = Math.max(inputTime, out[i - 1][4]);
+            double endProc = startProc + proc[i];
             int m = 0;
             for (int j = 0; j < i; j++){
-                if (endProc[j] > inputTime)
+                if (out[j][4] > inputTime)
                     m++;
             }
-            out[i][1] = m;
+            out[i][0] = i + 1;
+            out[i][1] = inputTime;
+            if (m > n) {
+                out[i][5] = n;
+                continue;
+            }
+            out[i][2] = startProc;
+            out[i][3] = proc[i];
+            out[i][4] = endProc;
+            out[i][5] = m;
+            out[i][6] = startProc - inputTime;
         }
         return out;
     }
@@ -117,9 +148,9 @@ public class Main {
         double res = 0;
         int count = 0;
         for (double[] doubles : input) {
-            if (doubles[1] == size) {
+            if (doubles[5] == size) {
                 count++;
-                res += doubles[2];
+                res += doubles[6];
             }
         }
         System.out.format("Вероятность нахождения в буфере %d заявок: %.2f\n", size, (count * 1.0 / input.length));
